@@ -2,14 +2,11 @@ module NestedForm
   class Builder < ::ActionView::Helpers::FormBuilder
     def link_to_add(name, association, html_options = {})
       @fields ||= {}
-      @template.after_nested_form(association) do
-        model_object = object.class.reflect_on_association(association).klass.new
-        output = %Q[<div id="#{association}_fields_blueprint" style="display: none">].html_safe
-        output << fields_for(association, model_object, :child_index => "new_#{association}", &@fields[association])
-        output.safe_concat('</div>')
-        output
-      end
 
+      model_object = object.class.reflect_on_association(association).klass.new
+      options = @fields[:options].merge(:child_index => "new_#{association}")
+
+      html_options["data-fields"] = CGI.escapeHTML(fields_for(association, model_object, options, &@fields[association]))
       html_options["data-association"] = association
       html_options[:class] = ([html_options[:class]] << "add_nested_fields").compact.join(' ')
 
@@ -24,14 +21,13 @@ module NestedForm
     def fields_for_with_nested_attributes(association, args, block)
       @fields ||= {}
       @fields[association] = block
+      @fields[:options] = args.last.is_a?(Hash) ? args.last : {}
       super
     end
 
-    def fields_for_nested_model(name, association, args, block)
-      output = '<div class="fields">'.html_safe
-      output << super
-      output.safe_concat('</div>')
-      output
+    def fields_for_nested_model(name, association, options, block)
+      wrapper = options[:wrapper_tag] || :div
+      @template.content_tag(wrapper, super, :class => 'fields')
     end
   end
 end
