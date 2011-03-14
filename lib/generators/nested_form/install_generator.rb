@@ -6,11 +6,7 @@ module NestedForm
       end
       
       def copy_jquery_file
-        if File.exists?('public/javascripts/prototype.js')
-          copy_file 'prototype_nested_form.js', 'public/javascripts/nested_form.js'
-        else
-          copy_file 'jquery_nested_form.js', 'public/javascripts/nested_form.js'
-        end
+        copy_file 'jquery_nested_form.js', 'public/javascripts/nested_form.js'
       end
     end
   end
