@@ -24,10 +24,7 @@ module NestedForm
     end
 
     def fields_for_with_nested_attributes(association, args, block)
-      @fields ||= {}
-      #@fields[association] = block
-      @fields[:options] = args.last.is_a?(Hash) ? args.last : {}
-      register_blueprint_generator_callback(association, block)
+      register_blueprint_generator_callback(association, args, block)
       super
     end
 
@@ -36,12 +33,15 @@ module NestedForm
       @template.content_tag(wrapper, super, :class => 'fields')
     end
 
-    def register_blueprint_generator_callback(association, block)
+    def register_blueprint_generator_callback(association, args, block)
       model_object = object.class.reflect_on_association(association).klass.new
+      options = args.last.is_a?(Hash) ? args.last : {}
+
       @template.after_nested_form(association) do
-        @template.content_tag(:div, :id => "#{association}_fields_blueprint", :style => "display: none") do
-          fields_for(association, model_object, :child_index => "new_#{association}", &block)
-        end
+        _opts = options.dup.merge(:child_index => "new_#{association}")
+        blueprint = fields_for(association, model_object, _opts, &block)
+        blueprint = CGI.escapeHTML(blueprint)
+        @template.content_tag(:div, '', :id => "#{association}_fields_blueprint", :style => "display: none", 'data-blueprint' => blueprint)
       end
     end
   end
