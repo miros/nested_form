@@ -23,14 +23,17 @@ module NestedForm
       hidden_field(:_destroy) + @template.link_to(name, "javascript:void(0)", html_options)
     end
 
-    def fields_for_with_nested_attributes(association, args, block)
-      register_blueprint_generator_callback(association, args, block)
+    def fields_for_with_nested_attributes(association_name, args, block)
+      register_blueprint_generator_callback(association_name, args, block)
+      options = args.extract_options!
+      options[:association_name] = association_name
+      args.push(options)
       super
     end
 
     def fields_for_nested_model(name, association, options, block)
       wrapper = options[:wrapper_tag] || :div
-      @template.content_tag(wrapper, super, :class => 'fields')
+      @template.content_tag(wrapper, super, :class => 'fields', 'data-association' => options[:association_name], 'data-id' => association.to_param || 'new')
     end
 
     def register_blueprint_generator_callback(association, args, block)
