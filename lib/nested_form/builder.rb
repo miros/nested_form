@@ -43,7 +43,7 @@ module NestedForm
       @template.after_nested_form(association) do
         _opts = options.dup.merge(:child_index => "new_#{association}")
         blueprint = fields_for(association, model_object, _opts, &block)
-        blueprint = CGI.escapeHTML(blueprint)
+        blueprint = CGI.escapeHTML(blueprint).html_safe
         @template.content_tag(:div, '', :id => "#{association}_fields_blueprint", :style => "display: none", 'data-blueprint' => blueprint)
       end
     end
